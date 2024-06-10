@@ -15,7 +15,6 @@ print(df)
 # 计算每周油温的均值，绘制折线图和散点图。
 
 # 计算每周油温的均值
-## 使用isocalendar()获取周数
 df['date'] = pd.to_datetime(df['date'])
 df['year_week'] = df['date'].dt.strftime('%Y-%V')
 df.to_csv("allData.csv")
@@ -88,7 +87,7 @@ plt.bar(intYear, MUFL['mean'], width, label='MUFL')
 plt.bar(intYear - width, LUFL['mean'], width, label='LUFL')
 
 ## 设置x轴刻度
-plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year+"年")
+plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year + "年")
 
 ## 设置轴标签
 plt.xlabel('年份', fontsize=13, loc='center', labelpad=15)
@@ -98,7 +97,7 @@ plt.ylabel('平均值', fontsize=13, loc='center', labelpad=15)
 plt.title('均值图像', fontsize=20, loc='center', pad=1.5)
 
 ## 设置图例
-plt.legend(['HUFL', 'MUFL', 'LUFL'],loc='upper right')
+plt.legend(['HUFL', 'MUFL', 'LUFL'], loc='upper right')
 
 ## 设置柱状图标识
 for a, b in zip(intYear + width, HUFL['mean']):
@@ -122,7 +121,7 @@ plt.bar(intYear, MUFL['max'], width, label='MUFL')
 plt.bar(intYear - width, LUFL['max'], width, label='LUFL')
 
 ## 设置x轴刻度
-plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year+"年")
+plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year + "年")
 
 ## 设置轴标签
 plt.xlabel('年份', fontsize=13, loc='center', labelpad=15)
@@ -147,3 +146,93 @@ for a, b in zip(intYear - width, LUFL['max']):
 plt.show()
 
 # 对油温数据，绘制直方图。自己按照最大、最小值划分区间。
+## 计算区间个数
+OT_max = df['OT'].max()
+OT_min = df['OT'].min()
+bins = int(OT_max - OT_min)
+print(OT_max)
+print(OT_min)
+
+## 绘图
+plt.hist(df['OT'], bins=bins)
+
+## 设置标签
+plt.xlabel('油温')
+plt.ylabel('出现次数')
+
+plt.show()
+
+# 对油温数据进行统计，绘制饼图。分为10个，将最大、最小区域分裂，并添加阴影效果。再加一列数据，绘制双环型图。
+#plt.pie(df['OT'])
+#plt.show()
+
+
+# 对高无效负载、中间无效负载和低无效负载三列数据，绘制箱型图
+HULL = df['HULL']
+MUFL = df['MUFL']
+LULL = df['LULL']
+plt.boxplot([HULL, MUFL, LULL],
+            whis=1.5,
+            showmeans=True
+            , flierprops={'markerfacecolor': 'red', 'markeredgecolor': 'red', 'markersize': 3}
+            , meanprops={'markerfacecolor': 'black', 'markeredgecolor': 'black', 'markersize': 8, 'marker': 'h'}
+            , medianprops={'linestyle': '--', 'color': 'orange'})
+plt.show()
+# 计算上四分位数和下四分位数
+Q1_HULL = HULL.quantile(0.25)
+Q2_HULL = HULL.quantile(0.75)
+
+Q1_MUFL = MUFL.quantile(0.25)
+Q2_MUFL = MUFL.quantile(0.75)
+
+Q1_LULL = LULL.quantile(0.25)
+Q2_LULL = LULL.quantile(0.75)
+
+# 基于1.5倍四分位差计算上下限对应值
+low_limit_HULL = Q1_HULL - 1.5 * (Q2_HULL - Q1_HULL)
+high_limit_HULL = Q2_HULL + 1.5 * (Q2_HULL - Q1_HULL)
+
+low_limit_MUFL = Q1_MUFL - 1.5 * (Q2_MUFL - Q1_MUFL)
+high_limit_MUFL = Q2_MUFL + 1.5 * (Q2_MUFL - Q1_MUFL)
+
+low_limit_LULL = Q1_LULL - 1.5 * (Q2_LULL - Q1_LULL)
+high_limit_LULL = Q2_LULL + 1.5 * (Q2_LULL - Q1_LULL)
+
+# 寻找异常值
+val_HULL = df['HULL'][(df['HULL'] > high_limit_HULL )|( df['HULL'] < low_limit_HULL)]
+val_MUFL = df['MUFL'][(df['MUFL'] > high_limit_MUFL )| (df['MUFL'] < low_limit_MUFL)]
+val_LULL = df['LULL'][(df['LULL'] > high_limit_LULL )|(df['LULL'] < low_limit_LULL)]
+
+print("异常值如下")
+print("val_HULL-----------------------------")
+print(val_HULL)
+
+print("val_MUFL-----------------------------")
+print(val_MUFL)
+
+print("val_LULL-----------------------------")
+print(val_LULL)
+
+
+
+
+# 从高有效负载数据这列中，选择任意连续7天的数据，绘制热力图。
+HUFL = df['HUFL'][1000:1006]
+print(HUFL)
+plt.imshow([HUFL])
+plt.colorbar()
+plt.xticks(range(6), df['date'][1000:1006], rotation=90)
+plt.yticks([0],["HUFL"])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
