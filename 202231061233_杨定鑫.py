@@ -199,9 +199,9 @@ low_limit_LULL = Q1_LULL - 1.5 * (Q2_LULL - Q1_LULL)
 high_limit_LULL = Q2_LULL + 1.5 * (Q2_LULL - Q1_LULL)
 
 # 寻找异常值
-val_HULL = df['HULL'][(df['HULL'] > high_limit_HULL )|( df['HULL'] < low_limit_HULL)]
-val_MUFL = df['MUFL'][(df['MUFL'] > high_limit_MUFL )| (df['MUFL'] < low_limit_MUFL)]
-val_LULL = df['LULL'][(df['LULL'] > high_limit_LULL )|(df['LULL'] < low_limit_LULL)]
+val_HULL = df['HULL'][(df['HULL'] > high_limit_HULL) | (df['HULL'] < low_limit_HULL)]
+val_MUFL = df['MUFL'][(df['MUFL'] > high_limit_MUFL) | (df['MUFL'] < low_limit_MUFL)]
+val_LULL = df['LULL'][(df['LULL'] > high_limit_LULL) | (df['LULL'] < low_limit_LULL)]
 
 print("异常值如下")
 print("val_HULL-----------------------------")
@@ -213,26 +213,41 @@ print(val_MUFL)
 print("val_LULL-----------------------------")
 print(val_LULL)
 
-
-
-
 # 从高有效负载数据这列中，选择任意连续7天的数据，绘制热力图。
 HUFL = df['HUFL'][1000:1006]
 print(HUFL)
 plt.imshow([HUFL])
 plt.colorbar()
 plt.xticks(range(6), df['date'][1000:1006], rotation=90)
-plt.yticks([0],["HUFL"])
+plt.yticks([0], ["HUFL"])
 plt.show()
 
+# 选取高无效负载、中间无效负载和低无效负载三列数据，绘制2行2列的多子图
+HUFL = df['HUFL'][0:100]
+MUFL = df['MUFL'][0:100]
+LUFL = df['LUFL'][0:100]
+date = df['date'][0:100]
+
+print(df)
+print(date)
+print(HUFL)
+
+fig = plt.figure(figsize=(20, 11))
+plt.subplot(2, 2, 1)
+plt.plot(date, HUFL)
+#plt.xticks(rotation=90)
+plt.xlabel("月份-日期 时间",fontsize=13)
+plt.ylabel("HUFL",fontsize=13)
+
+plt.subplot(2, 2, 2)
+plt.hist(MUFL,bins=20)
+plt.xlabel("MUFL",fontsize=13)
+plt.ylabel("出现次数",fontsize=13)
+
+plt.subplot(2, 1, 2)
+plt.plot(date, LUFL, 'ro')
+plt.xlabel("月份-日期 时间",fontsize=13)
+plt.ylabel("LUFL",fontsize=13)
 
 
-
-
-
-
-
-
-
-
-
+plt.show()
