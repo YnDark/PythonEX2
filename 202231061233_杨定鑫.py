@@ -271,16 +271,20 @@ print("val_LULL-----------------------------")
 print(val_LULL)
 
 # 从高有效负载数据这列中，选择任意连续7天的数据，绘制热力图。
-df[['date', 'HUFL']].map( )
+dayData = df[['date', 'HUFL']].set_index('date')
+HUFL = dayData['2017-1-1':'2017-1-7'].reset_index()
+print(HUFL)
+
+fig = plt.figure(figsize=(10, 4))
 
 ## 绘制热力图
-plt.imshow([HUFL])
+plt.imshow([HUFL['HUFL']], aspect=8, )
 
 ## 显示颜色条
-plt.colorbar()
+plt.colorbar(orientation='horizontal', pad=0.3,shrink=0.75,location='top')
 
 ## 设置两轴刻度
-plt.xticks(range(6), df['date'][1000:1006], rotation=90)
+plt.xticks(range(0, len(HUFL['date']), 24), HUFL['date'][0::24].dt.strftime('%Y/%m/%d'), rotation=90)
 plt.yticks([0], ["HUFL"])
 
 ## 设置标题
