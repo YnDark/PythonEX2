@@ -12,6 +12,11 @@ plt.rcParams['axes.unicode_minus'] = False
 df = pd.read_csv(r"D:\杨定鑫\Documents\py实验2\实验2\实验2\ETTh1.csv")
 print(df)
 
+# 颜色设置
+color1 = [142 / 255, 207 / 255, 201 / 255]
+color2 = [255 / 255, 190 / 255, 122 / 255]
+color3 = [250 / 255, 127 / 255, 111 / 255]
+
 # 计算每周油温的均值，绘制折线图和散点图。
 ## 计算每周油温的均值
 df['date'] = pd.to_datetime(df['date'])
@@ -20,9 +25,13 @@ OT_Mean = df.groupby(['year_week']).mean().reset_index()
 print(OT_Mean[['year_week', 'OT']])
 
 # 绘制折线图
+
 ## 设置画布大小
 fig = plt.figure(figsize=(11, 9))
-plt.plot(OT_Mean['year_week'], OT_Mean['OT'], color='black')
+plt.plot(OT_Mean['year_week'], OT_Mean['OT'], color='black', alpha=0.5)
+
+## 设置网格
+plt.grid(True, axis='y', linestyle='--')
 
 ## 设置图例
 plt.legend(("平均油温",))
@@ -84,9 +93,9 @@ fig = plt.figure(figsize=(12, 9))
 
 ## 平均值绘制柱状图
 width = round(1.0 / (len(intYear) * 2), 1)
-plt.bar(intYear + width, HUFL['mean'], width, label='HUFL', color='orange')
-plt.bar(intYear, MUFL['mean'], width, label='MUFL', color='blue')
-plt.bar(intYear - width, LUFL['mean'], width, label='LUFL', color='green')
+plt.bar(intYear + width, HUFL['mean'], width, label='HUFL', color=color1)
+plt.bar(intYear, MUFL['mean'], width, label='MUFL', color=color2)
+plt.bar(intYear - width, LUFL['mean'], width, label='LUFL', color=color3)
 
 ## 设置x轴刻度
 plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year + "年")
@@ -118,9 +127,9 @@ plt.show()
 fig = plt.figure(figsize=(12, 9))
 
 ## 最大值绘制柱状图
-plt.bar(intYear + width, HUFL['max'], width, label='HUFL', color='orange')
-plt.bar(intYear, MUFL['max'], width, label='MUFL', color='blue')
-plt.bar(intYear - width, LUFL['max'], width, label='LUFL', color='green')
+plt.bar(intYear + width, HUFL['max'], width, label='HUFL', color=color1)
+plt.bar(intYear, MUFL['max'], width, label='MUFL', color=color2)
+plt.bar(intYear - width, LUFL['max'], width, label='LUFL', color=color3)
 
 ## 设置x轴刻度
 plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year + "年")
@@ -151,9 +160,9 @@ plt.show()
 fig = plt.figure(figsize=(12, 9))
 
 ## 最小值绘制柱状图
-plt.bar(intYear + width, HUFL['min'], width, label='HUFL', color='orange')
-plt.bar(intYear, MUFL['min'], width, label='MUFL', color='blue')
-plt.bar(intYear - width, LUFL['min'], width, label='LUFL', color='green')
+plt.bar(intYear + width, HUFL['min'], width, label='HUFL', color=color1)
+plt.bar(intYear, MUFL['min'], width, label='MUFL', color=color2)
+plt.bar(intYear - width, LUFL['min'], width, label='LUFL', color=color3)
 
 ## 设置x轴刻度
 plt.xticks(ticks=range(intYear[0] + 0, intYear[0] + len(intYear)), labels=year + "年")
@@ -207,9 +216,79 @@ plt.ylabel('出现次数')
 plt.show()
 
 # 对油温数据进行统计，绘制饼图。分为10个，将最大、最小区域分裂，并添加阴影效果。再加一列数据，绘制双环型图。
-#plt.pie(df['OT'])
-#plt.show()
+oil_temps = df['OT']
+extra_data = df['HUFL']  # 额外的一列数据
 
+# 计算分组边界
+min_temp = oil_temps.min()
+max_temp = oil_temps.max()
+bins = [min_temp + (max_temp - min_temp) / 10 * i for i in range(11)]
+
+# 为每个区间设置标签
+labels = [f'{int(bins[i])}°C - {int(bins[i + 1])}°C' for i in range(len(bins) - 1)]
+
+# 对数据进行分组并添加标签
+oil_temps = pd.cut(oil_temps, bins=bins, labels=labels)
+extra_data = pd.cut(extra_data, bins=bins, labels=False)
+
+# 统计每个温度区间的频率
+temp_counts = oil_temps.value_counts()
+extra_counts = extra_data.value_counts()
+
+# 准备分裂参数
+explode_values = [0.1 if label in [labels[0], labels[-1]] else 0 for label in labels]
+
+
+# 自定义autopct，只显示大于0%的百分比
+def custom_autopct(pct):
+    return ('%.1f%%' % pct) if pct > 0 else ''
+
+
+# 绘制饼图
+plt.figure(figsize=(12, 10))
+size = 0.3
+
+# 设置颜色
+colors = ["#FF9999", "#66B2FF", "#99FF99", "#FFCC99", "#CCCCCC",
+          "#FF6666", "#3399FF", "#66FF66", "#FF9933", "#C0C0C0"]
+
+wedges1, texts1, autotexts1 = plt.pie(temp_counts, labels=temp_counts.index, radius=1,
+                                      autopct=custom_autopct, explode=explode_values, shadow=True, colors=colors,
+                                      pctdistance=0.85)
+# 添加图例
+plt.legend(wedges1, labels, title="油温区间", loc="upper left", bbox_to_anchor=(1, 0, 0.5, 1))
+
+# 添加标题
+plt.title('油温数据扇形图')
+
+plt.show()
+
+# 绘制双环扇形图
+plt.figure(figsize=(12, 10))
+size = 0.3
+
+# 设置颜色
+colors = ["#FF9999", "#66B2FF", "#99FF99", "#FFCC99", "#CCCCCC",
+          "#FF6666", "#3399FF", "#66FF66", "#FF9933", "#C0C0C0"]
+
+# 绘制外环
+plt.pie(extra_counts, radius=1 - size, wedgeprops=dict(width=size, edgecolor='w'),
+        autopct=custom_autopct, shadow=True, colors=colors, pctdistance=0.75)
+
+# 绘制内环
+wedges1, texts1, autotexts1 = plt.pie(temp_counts, labels=temp_counts.index, radius=1,
+                                      wedgeprops=dict(width=size, edgecolor='w'),
+                                      autopct=custom_autopct, explode=explode_values, shadow=True, colors=colors,
+                                      pctdistance=0.85)
+
+# 添加图例
+plt.legend(wedges1, labels, title="油温区间", loc="upper left", bbox_to_anchor=(1, 0, 0.5, 1))
+
+# 添加标题
+plt.title('油温数据双环扇形图')
+
+# 显示图表
+plt.show()
 
 # 对高无效负载、中间无效负载和低无效负载三列数据，绘制箱型图
 HULL = df['HULL']
@@ -271,6 +350,7 @@ print("val_LULL-----------------------------")
 print(val_LULL)
 
 # 从高有效负载数据这列中，选择任意连续7天的数据，绘制热力图。
+## 获取'2017-1-1':'2017-1-7'七天的数据
 dayData = df[['date', 'HUFL']].set_index('date')
 HUFL = dayData['2017-1-1':'2017-1-7'].reset_index()
 print(HUFL)
@@ -281,7 +361,7 @@ fig = plt.figure(figsize=(10, 4))
 plt.imshow([HUFL['HUFL']], aspect=8, )
 
 ## 显示颜色条
-plt.colorbar(orientation='horizontal', pad=0.3,shrink=0.75,location='top')
+plt.colorbar(orientation='horizontal', pad=0.3, shrink=0.75, location='top')
 
 ## 设置两轴刻度
 plt.xticks(range(0, len(HUFL['date']), 24), HUFL['date'][0::24].dt.strftime('%Y/%m/%d'), rotation=90)
@@ -301,19 +381,18 @@ MUFL = df['MUFL'][0:100]
 LUFL = df['LUFL'][0:100]
 date = df['date'][0:100]
 
-print(df)
-print(date)
-print(HUFL)
-
 fig = plt.figure(figsize=(20, 11))
+plt.title("HUFL折线图-MUFL直方图-LUFL散点图",fontsize=20)
+plt.axis("off")
+
 plt.subplot(2, 2, 1)
-plt.plot(date, HUFL)
-#plt.xticks(rotation=90)
+plt.plot(date, HUFL, color=color3)
+
 plt.xlabel("月份-日期 时间", fontsize=13)
 plt.ylabel("HUFL", fontsize=13)
 
 plt.subplot(2, 2, 2)
-plt.hist(MUFL, bins=20)
+plt.hist(MUFL, bins=20, color=color2)
 plt.xlabel("MUFL", fontsize=13)
 plt.ylabel("出现次数", fontsize=13)
 
